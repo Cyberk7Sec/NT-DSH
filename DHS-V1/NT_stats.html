@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stats Bar</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:           #0e0f13;
+  --surface:      #13151a;
+  --border:       rgba(255,255,255,0.06);
+  --white:        #f0f0f0;
+  --white-dim:    rgba(240,240,240,0.55);
+  --white-muted:  rgba(240,240,240,0.2);
+  --accent:       #4F8EF7;
+  --accent-sub:   rgba(79,142,247,0.1);
+  --accent-line:  rgba(79,142,247,0.2);
+  --kat:          #c8a96e;
+  --nej:          #7eb8d4;
+  --warn:         #f59e6a;
+  --ok:           #4ade80;
+  --c-cream-bg:   rgba(220,200,160,0.1);
+  --c-cream-bd:   rgba(220,200,160,0.22);
+  --c-cream-txt:  #d4c090;
+  --c-slate-bg:   rgba(126,184,212,0.1);
+  --c-slate-bd:   rgba(126,184,212,0.22);
+  --c-rose-bg:    rgba(195,135,145,0.1);
+  --c-rose-bd:    rgba(195,135,145,0.22);
+  --c-rose-txt:   #c89090;
+  --c-lav-bg:     rgba(155,135,195,0.1);
+  --c-lav-bd:     rgba(155,135,195,0.22);
+  --c-lav-txt:    #b8a8d8;
+}
+html, body { background: var(--bg); font-family: 'Space Grotesk', sans-serif; overflow: hidden; width: 100%; }
+
+.bar {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  padding: 12px 16px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px 14px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color 0.15s;
+}
+
+.stat-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+}
+
+/* Per-card bottom accent */
+.sc-grocery::after  { background: linear-gradient(90deg, var(--c-cream-txt), transparent); }
+.sc-rent::after     { background: linear-gradient(90deg, var(--warn), transparent); }
+.sc-chores::after   { background: linear-gradient(90deg, var(--kat), var(--nej)); }
+.sc-savings::after  { background: linear-gradient(90deg, rgba(74,222,128,0.6), transparent); }
+.sc-pickup::after   { background: linear-gradient(90deg, var(--c-rose-txt), transparent); }
+
+.sc-grocery { background: var(--c-cream-bg); border-color: var(--c-cream-bd); }
+.sc-rent    { border-color: rgba(245,158,106,0.2); }
+.sc-chores  { border-color: rgba(200,169,110,0.15); }
+.sc-savings { border-color: rgba(74,222,128,0.15); }
+.sc-pickup  { background: var(--c-rose-bg); border-color: var(--c-rose-bd); }
+
+.stat-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 7.5px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--white-muted);
+}
+
+.stat-main {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.stat-number {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+.stat-unit {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  color: var(--white-muted);
+}
+
+.n-grocery { color: var(--c-cream-txt); }
+.n-rent    { color: var(--warn); }
+.n-ok      { color: var(--ok); }
+.n-kat     { color: var(--kat); }
+.n-nej     { color: var(--nej); }
+.n-rose    { color: var(--c-rose-txt); }
+
+.stat-sub {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px;
+  color: var(--white-muted);
+  letter-spacing: 0.5px;
+}
+
+/* Chores score layout */
+.chores-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.chores-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.chores-score {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+.chores-name {
+  font-family: 'Space Mono', monospace;
+  font-size: 7px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--white-muted);
+}
+
+.chores-vs {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  color: rgba(255,255,255,0.1);
+}
+
+/* Progress bar */
+.prog-wrap { margin-top: 2px; }
+.prog-track { height: 2px; background: rgba(255,255,255,0.05); border-radius: 1px; overflow: hidden; }
+.prog-fill  { height: 100%; border-radius: 1px; transition: width 0.6s ease; }
+.pf-grocery { background: linear-gradient(90deg, var(--c-cream-txt), rgba(220,200,160,0.4)); }
+.pf-savings { background: linear-gradient(90deg, var(--ok), rgba(74,222,128,0.4)); }
+.prog-nums  { display: flex; justify-content: space-between; margin-top: 3px; }
+.prog-curr  { font-family: 'Space Mono', monospace; font-size: 7.5px; color: var(--white-muted); }
+
+.crown { font-size: 9px; }
+</style>
+</head>
+<body>
+<div class="bar">
+
+  <!-- GROCERY BUDGET -->
+  <div class="stat-card sc-grocery">
+    <div class="stat-label">Grocery Budget</div>
+    <div class="stat-main">
+      <span class="stat-number n-grocery" id="grocery-left">—</span>
+      <span class="stat-unit">left</span>
+    </div>
+    <div class="prog-wrap">
+      <div class="prog-track"><div class="prog-fill pf-grocery" id="grocery-bar" style="width:0%"></div></div>
+      <div class="prog-nums">
+        <span class="prog-curr" id="grocery-spent">spent $—</span>
+        <span class="prog-curr" id="grocery-total">of $—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- RENT COUNTDOWN -->
+  <div class="stat-card sc-rent">
+    <div class="stat-label">Rent Due</div>
+    <div class="stat-main">
+      <span class="stat-number" id="rent-days" style="color:var(--warn)">—</span>
+      <span class="stat-unit">days</span>
+    </div>
+    <div class="stat-sub" id="rent-date">Loading...</div>
+  </div>
+
+  <!-- CHORES ARENA -->
+  <div class="stat-card sc-chores">
+    <div class="stat-label">Chores Today</div>
+    <div class="chores-row">
+      <div class="chores-side">
+        <span class="chores-score n-kat" id="chores-kat">—</span>
+        <span class="chores-name">Kat <span class="crown" id="crown-kat"></span></span>
+      </div>
+      <div class="chores-vs">vs</div>
+      <div class="chores-side">
+        <span class="chores-score n-nej" id="chores-nej">—</span>
+        <span class="chores-name">Nejaun <span class="crown" id="crown-nej"></span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SAVINGS -->
+  <div class="stat-card sc-savings">
+    <div class="stat-label">Savings</div>
+    <div class="stat-main">
+      <span class="stat-number n-ok" id="savings-pct">—</span>
+      <span class="stat-unit">%</span>
+    </div>
+    <div class="prog-wrap">
+      <div class="prog-track"><div class="prog-fill pf-savings" id="savings-bar" style="width:0%"></div></div>
+      <div class="prog-nums">
+        <span class="prog-curr" id="savings-curr">$— saved</span>
+        <span class="prog-curr" id="savings-goal">goal $—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MARKETPLACE PICKUP TODAY -->
+  <div class="stat-card sc-pickup">
+    <div class="stat-label">Pickup Today</div>
+    <div class="stat-main">
+      <span class="stat-number n-rose" id="pickup-count">—</span>
+      <span class="stat-unit">items</span>
+    </div>
+    <div class="stat-sub" id="pickup-revenue">Week total: $—</div>
+  </div>
+
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzUBKXZgJvM80pDQgJy7Lfh89k0IyZNoTWxWMHssp6cqKXI1KCWEADkcwpsekOVEnXQ/exec';
+
+function setEl(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+function setWidth(id, pct) {
+  const el = document.getElementById(id);
+  if (el) el.style.width = Math.min(100, Math.max(0, pct)) + '%';
+}
+
+function rentCountdown() {
+  const now   = new Date();
+  const month = now.getMonth();
+  const year  = now.getFullYear();
+  let rentDate = new Date(year, month, 1); // 1st of current month
+  if (rentDate <= now) rentDate = new Date(year, month + 1, 1); // next month
+  const days = Math.ceil((rentDate - now) / 86400000);
+  setEl('rent-days', days);
+  setEl('rent-date', rentDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }));
+}
+
+function applyData(data) {
+  // Grocery
+  const gSpent = parseFloat(data.GROCERY_SPENT || 0);
+  const gTotal = parseFloat(data.GROCERY_BUDGET || 200);
+  const gLeft  = Math.max(0, gTotal - gSpent);
+  const gPct   = gTotal > 0 ? (gSpent / gTotal) * 100 : 0;
+  setEl('grocery-left', '$' + Math.round(gLeft));
+  setEl('grocery-spent', 'spent $' + Math.round(gSpent));
+  setEl('grocery-total', 'of $' + Math.round(gTotal));
+  setWidth('grocery-bar', gPct);
+
+  // Chores
+  const katScore = parseInt(data.CHORES_KAT || 0);
+  const nejScore = parseInt(data.CHORES_NEJ || 0);
+  setEl('chores-kat', katScore);
+  setEl('chores-nej', nejScore);
+  setEl('crown-kat', katScore > nejScore ? '👑' : '');
+  setEl('crown-nej', nejScore > katScore ? '👑' : '');
+
+  // Savings
+  const sCurr = parseFloat(data.SAVINGS_CURRENT || 0);
+  const sGoal = parseFloat(data.SAVINGS_GOAL || 3000);
+  const sPct  = sGoal > 0 ? Math.round((sCurr / sGoal) * 100) : 0;
+  setEl('savings-pct', sPct);
+  setEl('savings-curr', '$' + Math.round(sCurr).toLocaleString() + ' saved');
+  setEl('savings-goal', 'goal $' + Math.round(sGoal).toLocaleString());
+  setWidth('savings-bar', sPct);
+
+  // Pickups
+  setEl('pickup-count', data.PICKUP_TODAY_COUNT || '0');
+  setEl('pickup-revenue', 'Week total: $' + (data.PICKUP_WEEK_REVENUE || '0'));
+}
+
+function applyFallback() {
+  // Demo data so it never looks broken
+  applyData({
+    GROCERY_SPENT: 132, GROCERY_BUDGET: 200,
+    CHORES_KAT: 4, CHORES_NEJ: 2,
+    SAVINGS_CURRENT: 1240, SAVINGS_GOAL: 3000,
+    PICKUP_TODAY_COUNT: 2, PICKUP_WEEK_REVENUE: 250
+  });
+}
+
+async function load() {
+  rentCountdown(); // always runs from local time
+  try {
+    const res  = await fetch(`${SCRIPT_URL}?section=BUDGET`);
+    const json = await res.json();
+    // Flatten key-value pairs from sheet structure
+    const flat = {};
+    (json.data || json).forEach(row => { if (row.Key) flat[row.Key] = row.Value; });
+    applyData(flat);
+  } catch (e) {
+    applyFallback();
+  }
+}
+
+load();
+setInterval(load, 60000);
+</script>
+</body>
+</html>

@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marketplace</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:           #0e0f13;
+  --surface:      #13151a;
+  --surface2:     #1a1d25;
+  --border:       rgba(255,255,255,0.06);
+  --border2:      rgba(255,255,255,0.1);
+  --white:        #f0f0f0;
+  --white-dim:    rgba(240,240,240,0.55);
+  --white-muted:  rgba(240,240,240,0.2);
+  --accent:       #4F8EF7;
+  --accent-sub:   rgba(79,142,247,0.1);
+  --accent-line:  rgba(79,142,247,0.2);
+  --ok:           #4ade80;
+  --ok-sub:       rgba(74,222,128,0.1);
+  --ok-line:      rgba(74,222,128,0.2);
+  --warn:         #f59e6a;
+  --warn-sub:     rgba(245,158,106,0.1);
+  --c-rose-bg:    rgba(195,135,145,0.1);
+  --c-rose-bd:    rgba(195,135,145,0.22);
+  --c-rose-txt:   #c89090;
+  --c-cream-txt:  #d4c090;
+}
+html, body { background: var(--bg); font-family: 'Space Grotesk', sans-serif; overflow-x: hidden; width: 100%; }
+
+.card {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ─ Header row ─ */
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--white-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-title::before {
+  content: '';
+  width: 16px;
+  height: 1px;
+  background: var(--c-rose-txt);
+  opacity: 0.5;
+}
+
+.badge {
+  font-family: 'Space Mono', monospace;
+  font-size: 7px;
+  letter-spacing: 1px;
+  padding: 2px 7px;
+  border-radius: 2px;
+}
+
+.badge-live { background: var(--ok-sub); color: var(--ok); border: 1px solid var(--ok-line); }
+.badge-warn { background: var(--warn-sub); color: var(--warn); border: 1px solid rgba(245,158,106,0.2); }
+.badge-dim  { background: rgba(255,255,255,0.04); color: var(--white-muted); border: 1px solid var(--border); }
+
+/* ─ Summary strip ─ */
+.summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.sum-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.sum-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 7px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--white-muted);
+}
+
+.sum-val {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+
+.sv-green { color: var(--ok); }
+.sv-rose  { color: var(--c-rose-txt); }
+.sv-cream { color: var(--c-cream-txt); }
+
+.sum-sub {
+  font-family: 'Space Mono', monospace;
+  font-size: 7px;
+  color: var(--white-muted);
+}
+
+/* ─ Pickup list ─ */
+.list-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 7.5px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--white-muted);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.pickup-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pickup-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  border-radius: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  transition: border-color 0.15s;
+}
+
+.pickup-row:hover { border-color: var(--border2); }
+
+.pickup-row.today {
+  background: var(--c-rose-bg);
+  border-color: var(--c-rose-bd);
+}
+
+.pickup-left { display: flex; flex-direction: column; gap: 2px; }
+
+.pickup-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--white-dim);
+}
+
+.pickup-meta {
+  font-family: 'Space Mono', monospace;
+  font-size: 7.5px;
+  color: var(--white-muted);
+  letter-spacing: 0.5px;
+}
+
+.pickup-right { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+
+.pickup-price {
+  font-family: 'Space Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ok);
+}
+
+.pickup-row.today .pickup-price { color: var(--c-rose-txt); }
+
+.pickup-date-badge {
+  font-family: 'Space Mono', monospace;
+  font-size: 7px;
+  padding: 1px 6px;
+  border-radius: 2px;
+  letter-spacing: 0.5px;
+}
+
+.pdb-today { background: var(--c-rose-bg); color: var(--c-rose-txt); border: 1px solid var(--c-rose-bd); }
+.pdb-soon  { background: rgba(255,255,255,0.04); color: var(--white-muted); border: 1px solid var(--border); }
+
+.empty {
+  text-align: center;
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  color: var(--white-muted);
+  letter-spacing: 1px;
+  padding: 16px;
+  opacity: 0.5;
+}
+</style>
+</head>
+<body>
+<div class="card">
+
+  <div class="card-header">
+    <div class="card-title">Marketplace</div>
+    <span class="badge badge-live" id="mkt-status">Live</span>
+  </div>
+
+  <div class="summary">
+    <div class="sum-card">
+      <div class="sum-label">Today</div>
+      <div class="sum-val sv-rose" id="mkt-today-count">—</div>
+      <div class="sum-sub">pickups</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-label">Week Total</div>
+      <div class="sum-val sv-green" id="mkt-week-rev">$—</div>
+      <div class="sum-sub">revenue</div>
+    </div>
+    <div class="sum-card">
+      <div class="sum-label">Pending</div>
+      <div class="sum-val sv-cream" id="mkt-pending">—</div>
+      <div class="sum-sub">scheduled</div>
+    </div>
+  </div>
+
+  <div class="list-label">Upcoming Pickups</div>
+
+  <div class="pickup-list" id="pickup-list">
+    <div class="empty">Loading pickups...</div>
+  </div>
+
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzUBKXZgJvM80pDQgJy7Lfh89k0IyZNoTWxWMHssp6cqKXI1KCWEADkcwpsekOVEnXQ/exec';
+const todayStr = new Date().toDateString();
+
+function formatDate(dateStr) {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  if (isNaN(d)) return dateStr;
+  if (d.toDateString() === todayStr) return 'Today';
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function isToday(dateStr) {
+  if (!dateStr) return false;
+  return new Date(dateStr).toDateString() === todayStr;
+}
+
+function renderPickups(pickups) {
+  const list = document.getElementById('pickup-list');
+  if (!pickups || pickups.length === 0) {
+    list.innerHTML = '<div class="empty">No pickups scheduled</div>';
+    return;
+  }
+
+  let todayCount = 0;
+  let weekRev    = 0;
+  let pending    = 0;
+
+  list.innerHTML = pickups.slice(0, 5).map(p => {
+    const today = isToday(p.Date);
+    if (today) todayCount++;
+    if (p.Price) weekRev += parseFloat(p.Price) || 0;
+    if (!p.Completed) pending++;
+
+    return `
+      <div class="pickup-row ${today ? 'today' : ''}">
+        <div class="pickup-left">
+          <div class="pickup-name">${p.Item || 'Unnamed item'}</div>
+          <div class="pickup-meta">${p.Platform || 'Facebook Marketplace'}</div>
+        </div>
+        <div class="pickup-right">
+          <div class="pickup-price">$${parseFloat(p.Price || 0).toFixed(0)}</div>
+          <span class="pickup-date-badge ${today ? 'pdb-today' : 'pdb-soon'}">${formatDate(p.Date)}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('mkt-today-count').textContent = todayCount;
+  document.getElementById('mkt-week-rev').textContent    = '$' + weekRev.toLocaleString();
+  document.getElementById('mkt-pending').textContent     = pending;
+}
+
+async function load() {
+  try {
+    const res  = await fetch(`${SCRIPT_URL}?section=PICKUP`);
+    const json = await res.json();
+    renderPickups(json.data || json);
+    document.getElementById('mkt-status').textContent = 'Live';
+  } catch (e) {
+    // Demo fallback
+    renderPickups([
+      { Item: 'PlayStation 4 Bundle', Platform: 'Facebook Marketplace', Date: new Date().toISOString(), Price: 85,  Completed: false },
+      { Item: 'Dining table set',     Platform: 'Facebook Marketplace', Date: new Date(Date.now() + 86400000*2).toISOString(), Price: 120, Completed: false },
+      { Item: 'Air fryer',            Platform: 'Facebook Marketplace', Date: new Date(Date.now() + 86400000*4).toISOString(), Price: 45,  Completed: false },
+    ]);
+    document.getElementById('mkt-status').textContent = 'Demo';
+  }
+}
+
+load();
+setInterval(load, 60000);
+</script>
+</body>
+</html>
