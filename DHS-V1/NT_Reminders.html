@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reminders</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0e0f13;--surface:#13151a;--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.1);
+  --white:#f0f0f0;--wd:rgba(240,240,240,0.55);--wm:rgba(240,240,240,0.22);--wg:rgba(240,240,240,0.04);
+  --accent:#4F8EF7;--as:rgba(79,142,247,0.1);--al:rgba(79,142,247,0.2);
+  --kat:#c8a96e;--kat-s:rgba(200,169,110,0.1);--kat-l:rgba(200,169,110,0.2);
+  --nej:#7eb8d4;--nej-s:rgba(126,184,212,0.1);--nej-l:rgba(126,184,212,0.2);
+  --warn:#f59e6a;--warn-s:rgba(245,158,106,0.1);--warn-l:rgba(245,158,106,0.2);
+  --ok:#4ade80;
+}
+html,body{width:100%;background:var(--bg);font-family:'Space Grotesk',sans-serif;overflow:hidden}
+.block{
+  background:var(--bg);padding:clamp(12px,1.5vw,18px) clamp(14px,2vw,22px);
+  border-top:2px solid var(--accent);display:flex;flex-direction:column;gap:10px;
+}
+.block-head{display:flex;align-items:center;justify-content:space-between}
+.block-label{
+  font-family:'Space Mono',monospace;font-size:clamp(7px,0.7vw,9px);letter-spacing:3px;
+  text-transform:uppercase;color:var(--wm);display:flex;align-items:center;gap:8px;
+}
+.block-label::before{content:'';width:14px;height:1px;background:var(--accent);opacity:.5}
+.count-badge{
+  font-family:'Space Mono',monospace;font-size:clamp(6px,0.65vw,8px);letter-spacing:1px;
+  padding:2px 7px;border-radius:2px;background:var(--as);color:var(--accent);border:1px solid var(--al);
+}
+.reminder-list{display:flex;flex-direction:column;gap:5px}
+.reminder-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:clamp(6px,0.8vw,9px) clamp(8px,1vw,12px);
+  background:var(--surface);border:1px solid var(--border);border-radius:4px;
+  transition:border-color .15s;
+}
+.reminder-item:hover{border-color:var(--border2)}
+.reminder-item.urgent{background:var(--warn-s);border-color:var(--warn-l)}
+.reminder-item.kat-item{background:var(--kat-s);border-color:var(--kat-l)}
+.reminder-item.nej-item{background:var(--nej-s);border-color:var(--nej-l)}
+.ri-left{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+.ri-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.dot-accent{background:var(--accent)}.dot-kat{background:var(--kat)}.dot-nej{background:var(--nej)}.dot-warn{background:var(--warn)}
+.ri-text{font-size:clamp(10px,1vw,13px);color:var(--wd);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ri-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.ri-tag{
+  font-family:'Space Mono',monospace;font-size:clamp(6px,0.6vw,8px);letter-spacing:.5px;
+  padding:2px 6px;border-radius:2px;
+}
+.tag-kat{background:var(--kat-s);color:var(--kat);border:1px solid var(--kat-l)}
+.tag-nej{background:var(--nej-s);color:var(--nej);border:1px solid var(--nej-l)}
+.tag-both{background:var(--wg);color:var(--wm);border:1px solid var(--border)}
+.tag-urgent{background:var(--warn-s);color:var(--warn);border:1px solid var(--warn-l)}
+.ri-time{font-family:'Space Mono',monospace;font-size:clamp(6px,0.6vw,8px);color:var(--wm)}
+.empty{text-align:center;font-family:'Space Mono',monospace;font-size:10px;color:var(--wm);padding:14px;letter-spacing:1px;opacity:.5}
+</style>
+</head>
+<body>
+<div class="block">
+  <div class="block-head">
+    <div class="block-label">Reminders</div>
+    <div class="count-badge" id="reminder-count">— items</div>
+  </div>
+  <div class="reminder-list" id="reminder-list">
+    <div class="empty">Loading...</div>
+  </div>
+</div>
+<script>
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbzUBKXZgJvM80pDQgJy7Lfh89k0IyZNoTWxWMHssp6cqKXI1KCWEADkcwpsekOVEnXQ/exec';
+
+function dotClass(who){
+  if(!who)return'dot-accent';
+  const w=who.toLowerCase();
+  if(w.includes('kat'))return'dot-kat';
+  if(w.includes('nej'))return'dot-nej';
+  if(w.includes('urgent')||w.includes('warn'))return'dot-warn';
+  return'dot-accent';
+}
+function itemClass(who,urgent){
+  if(urgent)return'reminder-item urgent';
+  if(!who)return'reminder-item';
+  const w=who.toLowerCase();
+  if(w.includes('kat'))return'reminder-item kat-item';
+  if(w.includes('nej'))return'reminder-item nej-item';
+  return'reminder-item';
+}
+function tagHtml(who){
+  if(!who)return'';
+  const w=who.toLowerCase();
+  if(w.includes('kat'))return`<span class="ri-tag tag-kat">Kat</span>`;
+  if(w.includes('nej'))return`<span class="ri-tag tag-nej">Nej</span>`;
+  if(w.includes('both'))return`<span class="ri-tag tag-both">Both</span>`;
+  return`<span class="ri-tag tag-both">${who}</span>`;
+}
+
+function render(items){
+  const list=document.getElementById('reminder-list');
+  const count=document.getElementById('reminder-count');
+  if(!items||items.length===0){
+    list.innerHTML='<div class="empty">No reminders · You\'re all clear</div>';
+    count.textContent='0 items';return;
+  }
+  count.textContent=items.length+' item'+(items.length!==1?'s':'');
+  list.innerHTML=items.map(r=>{
+    const urgent=(r.Value||'').toLowerCase().includes('urgent')||(r.Who||'').toLowerCase().includes('urgent');
+    return`<div class="${itemClass(r.Who,urgent)}">
+      <div class="ri-left">
+        <div class="ri-dot ${dotClass(r.Who)}"></div>
+        <span class="ri-text">${r.Value||r.Key||'—'}</span>
+      </div>
+      <div class="ri-right">
+        ${tagHtml(r.Who||r.Key)}
+        ${r.Time?`<span class="ri-time">${r.Time}</span>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function demo(){
+  render([
+    {Value:'Pickup at 3pm — PlayStation bundle',Who:'Nej',Time:'3:00 PM'},
+    {Value:'Study session — CompTIA A+ Ch.7',Who:'Kat',Time:'7:00 PM'},
+    {Value:'Pay electric bill',Who:'Nej',Time:'Jun 1'},
+    {Value:'Grocery run this week',Who:'Both'},
+    {Value:'Gym — leg day',Who:'Kat',Time:'6:00 AM'},
+  ]);
+}
+
+async function load(){
+  try{
+    const res=await fetch(`${SCRIPT_URL}?section=REMINDER`);
+    const json=await res.json();
+    const items=(json.data||[]).filter(r=>r.Value||r.Key);
+    if(items.length===0){demo();return}
+    render(items);
+  }catch(e){demo()}
+}
+
+load();setInterval(load,60000);
+</script>
+</body>
+</html>
