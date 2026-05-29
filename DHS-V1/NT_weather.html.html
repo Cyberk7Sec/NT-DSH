@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weather Widget</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:           #0e0f13;
+  --surface:      #13151a;
+  --border:       rgba(255,255,255,0.06);
+  --white:        #f0f0f0;
+  --white-dim:    rgba(240,240,240,0.55);
+  --white-muted:  rgba(240,240,240,0.2);
+  --accent:       #4F8EF7;
+  --accent-subtle: rgba(79,142,247,0.1);
+  --accent-line:  rgba(79,142,247,0.2);
+}
+html, body { background: var(--bg); font-family: 'Space Grotesk', sans-serif; overflow: hidden; width: 100%; }
+
+.weather-widget {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.weather-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.weather-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--white-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.weather-title::before {
+  content: '';
+  width: 12px;
+  height: 1px;
+  background: var(--accent);
+  opacity: 0.5;
+}
+
+.status-badge {
+  font-family: 'Space Mono', monospace;
+  font-size: 7px;
+  letter-spacing: 1px;
+  padding: 2px 7px;
+  border-radius: 2px;
+  background: var(--accent-subtle);
+  color: var(--accent);
+  border: 1px solid var(--accent-line);
+}
+
+.weather-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.weather-icon {
+  font-size: 32px;
+  line-height: 1;
+  min-width: 40px;
+}
+
+.weather-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.weather-temp {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--accent);
+  line-height: 1;
+  letter-spacing: -0.5px;
+}
+
+.weather-desc {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: var(--white-dim);
+  letter-spacing: 0.5px;
+}
+
+.weather-details {
+  display: flex;
+  gap: 12px;
+  padding-top: 6px;
+  border-top: 0.5px solid var(--border);
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.detail-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 7px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--white-muted);
+}
+
+.detail-value {
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--white-dim);
+}
+
+.loading {
+  text-align: center;
+  color: var(--white-muted);
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  padding: 20px;
+}
+
+.error {
+  color: rgba(245,158,106,0.6);
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  text-align: center;
+  padding: 12px;
+}
+</style>
+</head>
+<body>
+<div class="weather-widget">
+  <div class="weather-header">
+    <div class="weather-title">Weather</div>
+    <div class="status-badge" id="status">Loading...</div>
+  </div>
+  <div id="weather-content">
+    <div class="loading">Fetching weather...</div>
+  </div>
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzUBKXZgJvM80pDQgJy7Lfh89k0IyZNoTWxWMHssp6cqKXI1KCWEADkcwpsekOVEnXQ/exec';
+const LOCATION = 'Elizabeth, NJ';
+
+function getWeatherIcon(code) {
+  // WMO Weather interpretation codes
+  if (code === 0) return '☀️';      // Clear
+  if (code === 1 || code === 2) return '⛅';  // Partly cloudy
+  if (code === 3) return '☁️';      // Overcast
+  if (code >= 45 && code <= 48) return '🌫️'; // Fog
+  if (code >= 51 && code <= 67) return '🌧️'; // Drizzle/rain
+  if (code >= 71 && code <= 77) return '❄️'; // Snow
+  if (code >= 80 && code <= 82) return '🌧️'; // Rain showers
+  if (code >= 85 && code <= 86) return '❄️'; // Snow showers
+  if (code >= 80 && code <= 99) return '⛈️'; // Thunderstorm
+  return '☀️';
+}
+
+function getWeatherDesc(code) {
+  if (code === 0) return 'Clear';
+  if (code === 1 || code === 2) return 'Partly cloudy';
+  if (code === 3) return 'Overcast';
+  if (code >= 45 && code <= 48) return 'Fog';
+  if (code >= 51 && code <= 67) return 'Drizzle';
+  if (code >= 71 && code <= 77) return 'Snow';
+  if (code >= 80 && code <= 82) return 'Rain showers';
+  if (code >= 85 && code <= 86) return 'Snow showers';
+  if (code >= 80 && code <= 99) return 'Thunderstorm';
+  return 'Unknown';
+}
+
+async function loadWeather() {
+  const content = document.getElementById('weather-content');
+  const status = document.getElementById('status');
+
+  try {
+    const res = await fetch(`${SCRIPT_URL}?section=WEATHER`);
+    const data = await res.json();
+
+    if (data.error) throw new Error(data.error);
+
+    const icon = getWeatherIcon(data.code);
+    const desc = getWeatherDesc(data.code);
+    const now = new Date();
+    const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+
+    content.innerHTML = `
+      <div class="weather-main">
+        <div class="weather-icon">${icon}</div>
+        <div class="weather-info">
+          <div class="weather-temp">${data.temp}°F</div>
+          <div class="weather-desc">${desc}</div>
+        </div>
+      </div>
+      <div class="weather-details">
+        <div class="detail-item">
+          <div class="detail-label">Humidity</div>
+          <div class="detail-value">${data.humidity}%</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Wind</div>
+          <div class="detail-value">${data.wind} mph</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Location</div>
+          <div class="detail-value">${LOCATION}</div>
+        </div>
+      </div>
+    `;
+    status.textContent = 'Live';
+  } catch (e) {
+    content.innerHTML = `<div class="error">Weather unavailable</div>`;
+    status.textContent = 'Error';
+    console.error('Weather error:', e);
+  }
+}
+
+loadWeather();
+setInterval(loadWeather, 300000); // Refresh every 5 minutes
+</script>
+</body>
+</html>
