@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jamuvia Pro Stats Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:           #0e0f13;
+  --surface:      #13151a;
+  --surface2:     #1a1d25;
+  --border:       rgba(255,255,255,0.06);
+  --border2:      rgba(255,255,255,0.1);
+
+  --white:        #f0f0f0;
+  --white-dim:    rgba(240,240,240,0.55);
+  --white-muted:  rgba(240,240,240,0.2);
+  --white-ghost:  rgba(240,240,240,0.07);
+
+  --accent:       #4F8EF7;
+  --accent-dim:   rgba(79,142,247,0.35);
+
+  --kat:          #c8a96e;
+  --nej:          #7eb8d4;
+
+  --ok:           #4ade80;
+  --warn:         #f59e6a;
+  --critical:     #e85c5c;
+
+  --c-cream-bg:   rgba(220,200,160,0.08);
+  --c-cream-bd:   rgba(220,200,160,0.22);
+  --c-cream-txt:  #d4c090;
+
+  --c-rose-bg:    rgba(195,135,145,0.08);
+  --c-rose-bd:    rgba(195,135,145,0.22);
+  --c-rose-txt:   #c89090;
+}
+
+html, body {
+  background: var(--bg);
+  font-family: 'Space Grotesk', sans-serif;
+  overflow: auto;
+  width: 100%;
+  color: var(--white);
+}
+
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  max-width: 420px;
+}
+
+/* ══════════════════════════════════════════════════════════ */
+/* CARD LAYOUT */
+/* ══════════════════════════════════════════════════════════ */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.card:hover {
+  border-color: var(--border2);
+  background: var(--surface2);
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.card:hover::before { opacity: 1; }
+
+/* Card accent colors */
+.card-grocery::before { background: linear-gradient(90deg, var(--c-cream-txt), transparent); }
+.card-rent::before { background: linear-gradient(90deg, var(--warn), transparent); }
+.card-savings::before { background: linear-gradient(90deg, var(--ok), transparent); }
+.card-chores::before { background: linear-gradient(90deg, var(--kat), var(--nej)); }
+.card-pickups::before { background: linear-gradient(90deg, var(--c-rose-txt), transparent); }
+
+.card-grocery { background: var(--c-cream-bg); border-color: var(--c-cream-bd); }
+.card-rent { border-color: rgba(245,158,106,0.15); }
+.card-savings { border-color: rgba(74,222,128,0.15); }
+.card-chores { border-color: rgba(200,169,110,0.12); }
+.card-pickups { background: var(--c-rose-bg); border-color: var(--c-rose-bd); }
+
+/* Card Header */
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.card-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.card-title-group {
+  flex: 1;
+}
+
+.card-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--white-muted);
+  margin: 0;
+}
+
+.card-status {
+  font-family: 'Space Mono', monospace;
+  font-size: 7px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.05);
+  color: var(--white-muted);
+  border: 1px solid var(--border);
+}
+
+.status-ok { background: rgba(74,222,128,0.1); color: var(--ok); border-color: rgba(74,222,128,0.2); }
+.status-warn { background: rgba(245,158,106,0.1); color: var(--warn); border-color: rgba(245,158,106,0.2); }
+.status-critical { background: rgba(232,85,92,0.1); color: var(--critical); border-color: rgba(232,85,92,0.2); }
+
+/* ══════════════════════════════════════════════════════════ */
+/* PROGRESS BAR COMPONENT */
+/* ══════════════════════════════════════════════════════════ */
+
+.stat-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stat-main {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.stat-number {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+.stat-sub-text {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: var(--white-muted);
+}
+
+.progress-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  background: linear-gradient(90deg, var(--ok), rgba(74,222,128,0.4));
+}
+
+.progress-fill.grocery { background: linear-gradient(90deg, var(--c-cream-txt), rgba(220,200,160,0.3)); }
+.progress-fill.savings { background: linear-gradient(90deg, var(--ok), rgba(74,222,128,0.4)); }
+
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'Space Mono', monospace;
+  font-size: 8px;
+  color: var(--white-muted);
+  letter-spacing: 0.5px;
+}
+
+/* ══════════════════════════════════════════════════════════ */
+/* CIRCULAR GAUGE */
+/* ══════════════════════════════════════════════════════════ */
+
+.gauge-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 12px 0;
+}
+
+.gauge {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+.gauge-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.gauge-bg {
+  fill: none;
+  stroke: rgba(255,255,255,0.05);
+  stroke-width: 6;
+}
+
+.gauge-fill {
+  fill: none;
+  stroke: var(--ok);
+  stroke-width: 6;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.gauge-fill.savings { stroke: var(--ok); }
+.gauge-fill.grocery { stroke: var(--c-cream-txt); }
+
+.gauge-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gauge-value {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.gauge-unit {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  color: var(--white-muted);
+}
+
+.gauge-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px;
+  color: var(--white-muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+/* ══════════════════════════════════════════════════════════ */
+/* RENT COUNTDOWN */
+/* ══════════════════════════════════════════════════════════ */
+
+.countdown-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 0;
+  gap: 6px;
+}
+
+.countdown-number {
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -2px;
+  color: var(--warn);
+}
+
+.countdown-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--white-muted);
+}
+
+.countdown-date {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px;
+  color: rgba(255,255,255,0.1);
+  margin-top: 4px;
+}
+
+/* Color-coded urgency */
+.countdown-display.urgent .countdown-number { color: var(--critical); }
+.countdown-display.caution .countdown-number { color: var(--warn); }
+.countdown-display.safe .countdown-number { color: var(--ok); }
+
+/* ══════════════════════════════════════════════════════════ */
+/* SCOREBOARD (CHORES) */
+/* ══════════════════════════════════════════════════════════ */
+
+.scoreboard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 8px 0;
+}
+
+.scoreboard-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.scoreboard-name {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  min-width: 50px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.scoreboard-name.kat { color: var(--kat); }
+.scoreboard-name.nej { color: var(--nej); }
+
+.crown { font-size: 14px; }
+
+.scoreboard-bar {
+  flex: 1;
+  height: 6px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+
+.scoreboard-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s ease;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 3px;
+}
+
+.scoreboard-fill.kat { background: linear-gradient(90deg, var(--kat), rgba(200,169,110,0.3)); }
+.scoreboard-fill.nej { background: linear-gradient(90deg, var(--nej), rgba(126,184,212,0.3)); }
+
+.scoreboard-score {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--white);
+  min-width: 24px;
+  text-align: right;
+}
+
+/* ══════════════════════════════════════════════════════════ */
+/* PICKUP LIST */
+/* ══════════════════════════════════════════════════════════ */
+
+.pickup-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.summary-row:last-child {
+  border-bottom: none;
+}
+
+.summary-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--white-muted);
+}
+
+.summary-value {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.summary-value.rose { color: var(--c-rose-txt); }
+
+/* ══════════════════════════════════════════════════════════ */
+/* LOADING & UPDATES */
+/* ══════════════════════════════════════════════════════════ */
+
+.loading {
+  text-align: center;
+  color: var(--white-muted);
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  padding: 12px;
+  letter-spacing: 1px;
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card { animation: slideUp 0.4s ease forwards; }
+.card:nth-child(1) { animation-delay: 0s; }
+.card:nth-child(2) { animation-delay: 0.1s; }
+.card:nth-child(3) { animation-delay: 0.2s; }
+.card:nth-child(4) { animation-delay: 0.3s; }
+.card:nth-child(5) { animation-delay: 0.4s; }
+
+</style>
+</head>
+<body>
+<div class="dashboard" id="dashboard">
+  <div class="loading">Loading dashboard...</div>
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzUBKXZgJvM80pDQgJy7Lfh89k0IyZNoTWxWMHssp6cqKXI1KCWEADkcwpsekOVEnXQ/exec';
+
+// ═══════════════════════════════════════════════════════════
+// UTILITY FUNCTIONS
+// ═══════════════════════════════════════════════════════════
+
+function setEl(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+function setAttr(id, attr, val) {
+  const el = document.getElementById(id);
+  if (el) el.setAttribute(attr, val);
+}
+
+function setClass(id, cls) {
+  const el = document.getElementById(id);
+  if (el) el.className = cls;
+}
+
+function rentDays() {
+  const now = new Date();
+  let rent = new Date(now.getFullYear(), now.getMonth(), 1);
+  if (rent <= now) rent = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  return Math.ceil((rent - now) / 86400000);
+}
+
+function rentDate() {
+  const now = new Date();
+  let rent = new Date(now.getFullYear(), now.getMonth(), 1);
+  if (rent <= now) rent = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  return rent.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function getRentStatus(days) {
+  if (days < 5) return 'critical';
+  if (days < 15) return 'warn';
+  return 'safe';
+}
+
+// ═══════════════════════════════════════════════════════════
+// GAUGE SVG BUILDER
+// ═══════════════════════════════════════════════════════════
+
+function createGaugeSVG(id, percentage, className) {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('class', 'gauge-svg');
+  svg.setAttribute('viewBox', '0 0 100 100');
+
+  const radius = 40;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (percentage / 100) * circumference;
+
+  const bgCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  bgCircle.setAttribute('class', 'gauge-bg');
+  bgCircle.setAttribute('cx', '50');
+  bgCircle.setAttribute('cy', '50');
+  bgCircle.setAttribute('r', radius);
+
+  const fillCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  fillCircle.setAttribute('class', `gauge-fill ${className}`);
+  fillCircle.setAttribute('cx', '50');
+  fillCircle.setAttribute('cy', '50');
+  fillCircle.setAttribute('r', radius);
+  fillCircle.setAttribute('stroke-dasharray', circumference);
+  fillCircle.setAttribute('stroke-dashoffset', offset);
+
+  svg.appendChild(bgCircle);
+  svg.appendChild(fillCircle);
+
+  return svg;
+}
+
+// ═══════════════════════════════════════════════════════════
+// DATA RENDER FUNCTIONS
+// ═══════════════════════════════════════════════════════════
+
+function applyData(data) {
+  // ─── GROCERY BUDGET ───
+  const gSpent = parseFloat(data.GROCERY_SPENT || 0);
+  const gTotal = parseFloat(data.GROCERY_BUDGET || 200);
+  const gLeft = Math.max(0, gTotal - gSpent);
+  const gPct = gTotal > 0 ? (gSpent / gTotal) * 100 : 0;
+
+  setEl('grocery-left', '$' + Math.round(gLeft));
+  setEl('grocery-spent', '$' + Math.round(gSpent));
+  setEl('grocery-total', '$' + Math.round(gTotal));
+  setAttr('grocery-bar', 'style', `width: ${Math.min(100, gPct)}%`);
+
+  // ─── RENT ───
+  const days = rentDays();
+  const status = getRentStatus(days);
+  setEl('rent-days', days);
+  setEl('rent-date', rentDate());
+  setClass('rent-countdown', `countdown-display ${status}`);
+
+  // ─── SAVINGS ───
+  const sCurr = parseFloat(data.SAVINGS_CURRENT || 0);
+  const sGoal = parseFloat(data.SAVINGS_GOAL || 3000);
+  const sPct = sGoal > 0 ? Math.round((sCurr / sGoal) * 100) : 0;
+
+  setEl('savings-pct', sPct);
+  setEl('savings-curr', '$' + Math.round(sCurr).toLocaleString());
+  setEl('savings-goal', '$' + Math.round(sGoal).toLocaleString());
+
+  // Gauge
+  const gaugeEl = document.getElementById('savings-gauge');
+  if (gaugeEl) {
+    gaugeEl.innerHTML = '';
+    gaugeEl.appendChild(createGaugeSVG('', sPct, 'savings'));
+  }
+
+  // ─── CHORES ───
+  const katScore = parseInt(data.CHORES_KAT || 0);
+  const nejScore = parseInt(data.CHORES_NEJ || 0);
+  const maxScore = Math.max(katScore, nejScore, 5); // Min scale 5
+
+  setEl('chores-kat', katScore);
+  setEl('chores-nej', nejScore);
+  setEl('crown-kat', katScore > nejScore && katScore > 0 ? '👑' : '');
+  setEl('crown-nej', nejScore > katScore && nejScore > 0 ? '👑' : '');
+
+  setAttr('kat-bar', 'style', `width: ${(katScore / maxScore) * 100}%`);
+  setAttr('nej-bar', 'style', `width: ${(nejScore / maxScore) * 100}%`);
+
+  // ─── PICKUPS ───
+  const pickupCount = parseInt(data.PICKUP_TODAY_COUNT || 0);
+  const pickupRev = parseFloat(data.PICKUP_WEEK_REVENUE || 0);
+
+  setEl('pickup-count', pickupCount);
+  setEl('pickup-revenue', '$' + Math.round(pickupRev).toLocaleString());
+}
+
+function applyFallback() {
+  applyData({
+    GROCERY_SPENT: 215,
+    GROCERY_BUDGET: 800,
+    SAVINGS_CURRENT: 585,
+    SAVINGS_GOAL: 3000,
+    CHORES_KAT: 4,
+    CHORES_NEJ: 2,
+    PICKUP_TODAY_COUNT: 2,
+    PICKUP_WEEK_REVENUE: 730
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER HTML
+// ═══════════════════════════════════════════════════════════
+
+function renderDashboard() {
+  const html = `
+    <!-- GROCERY BUDGET -->
+    <div class="card card-grocery">
+      <div class="card-header">
+        <div class="card-icon">🍝</div>
+        <div class="card-title-group">
+          <div class="card-title">Grocery Budget</div>
+        </div>
+        <span class="card-status">Today</span>
+      </div>
+      <div class="stat-progress">
+        <div class="stat-main">
+          <span class="stat-number" id="grocery-left">$—</span>
+          <span class="stat-sub-text">left</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill grocery" id="grocery-bar" style="width: 0%"></div>
+        </div>
+        <div class="progress-labels">
+          <span id="grocery-spent">$—</span>
+          <span id="grocery-total">of $—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RENT COUNTDOWN -->
+    <div class="card card-rent">
+      <div class="card-header">
+        <div class="card-icon">📅</div>
+        <div class="card-title-group">
+          <div class="card-title">Rent Due</div>
+        </div>
+      </div>
+      <div class="countdown-display" id="rent-countdown">
+        <div class="countdown-number" id="rent-days">—</div>
+        <div class="countdown-label">Days</div>
+        <div class="countdown-date" id="rent-date">—</div>
+      </div>
+    </div>
+
+    <!-- SAVINGS GOAL -->
+    <div class="card card-savings">
+      <div class="card-header">
+        <div class="card-icon">💰</div>
+        <div class="card-title-group">
+          <div class="card-title">Savings Goal</div>
+        </div>
+        <span class="card-status" id="savings-status">19%</span>
+      </div>
+      <div class="gauge-container">
+        <div class="gauge" id="savings-gauge"></div>
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <div class="stat-main">
+            <span class="stat-number" id="savings-pct">—</span>
+            <span class="stat-sub-text">%</span>
+          </div>
+          <div style="font-family: 'Space Mono', monospace; font-size: 8px; color: var(--white-muted);">
+            <div id="savings-curr">$— saved</div>
+            <div id="savings-goal">goal $—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHORES SCOREBOARD -->
+    <div class="card card-chores">
+      <div class="card-header">
+        <div class="card-icon">🏆</div>
+        <div class="card-title-group">
+          <div class="card-title">Chores Today</div>
+        </div>
+      </div>
+      <div class="scoreboard">
+        <div class="scoreboard-row">
+          <div class="scoreboard-name kat"><span id="crown-kat"></span>Kat</div>
+          <div class="scoreboard-bar">
+            <div class="scoreboard-fill kat" id="kat-bar" style="width: 0%"></div>
+          </div>
+          <div class="scoreboard-score" id="chores-kat">—</div>
+        </div>
+        <div class="scoreboard-row">
+          <div class="scoreboard-name nej"><span id="crown-nej"></span>Nej</div>
+          <div class="scoreboard-bar">
+            <div class="scoreboard-fill nej" id="nej-bar" style="width: 0%"></div>
+          </div>
+          <div class="scoreboard-score" id="chores-nej">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MARKETPLACE PICKUPS -->
+    <div class="card card-pickups">
+      <div class="card-header">
+        <div class="card-icon">📦</div>
+        <div class="card-title-group">
+          <div class="card-title">Marketplace</div>
+        </div>
+        <span class="card-status">Live</span>
+      </div>
+      <div class="pickup-summary">
+        <div class="summary-row">
+          <div class="summary-label">Today</div>
+          <div class="summary-value rose" id="pickup-count">—</div>
+        </div>
+        <div class="summary-row">
+          <div class="summary-label">Week Revenue</div>
+          <div class="summary-value rose" id="pickup-revenue">$—</div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('dashboard').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════
+// LOAD DATA
+// ═══════════════════════════════════════════════════════════
+
+async function load() {
+  renderDashboard();
+
+  try {
+    const res = await fetch(`${SCRIPT_URL}?section=BUDGET`);
+    const json = await res.json();
+    const flat = {};
+    (json.data || []).forEach(r => { if (r.Key) flat[r.Key] = r.Value; });
+    applyData(flat);
+  } catch (e) {
+    applyFallback();
+  }
+}
+
+load();
+setInterval(load, 60000);
+</script>
+</body>
+</html>
