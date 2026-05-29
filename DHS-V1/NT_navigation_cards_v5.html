@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jamuvia Navigation Cards</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:              #0e0f13;
+  --surface:         #13151a;
+  --surface-hover:   #1c1f27;
+  --border:          rgba(255,255,255,0.06);
+  --border-hover:    rgba(255,255,255,0.12);
+  --white:           #f0f0f0;
+  --white-dim:       rgba(240,240,240,0.55);
+  --white-muted:     rgba(240,240,240,0.2);
+  --accent:          #4F8EF7;
+  --accent-subtle:   rgba(79,142,247,0.1);
+  --accent-line:     rgba(79,142,247,0.2);
+  
+  --kat:             #c8a96e;
+  --kat-subtle:      rgba(200,169,110,0.1);
+  --kat-line:        rgba(200,169,110,0.2);
+  
+  --nej:             #7eb8d4;
+  --nej-subtle:      rgba(126,184,212,0.1);
+  --nej-line:        rgba(126,184,212,0.2);
+}
+
+html, body {
+  background: var(--bg);
+  font-family: 'Space Grotesk', sans-serif;
+  overflow: hidden;
+  width: 100%;
+  padding: 20px;
+}
+
+.nav-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.nav-card {
+  background: rgba(19, 21, 26, 0.4);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  min-height: 140px;
+}
+
+.nav-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.nav-card:hover {
+  background: rgba(19, 21, 26, 0.6);
+  border-color: var(--border-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.nav-card:hover::before {
+  opacity: 1;
+}
+
+.card-home::before   { background: var(--accent); }
+.card-nutrition::before { background: var(--kat); }
+.card-finances::before  { background: var(--nej); }
+.card-business::before  { background: #c89090; }
+.card-growth::before    { background: #b8a8d8; }
+.card-chores::before    { background: #88c89a; }
+
+.card-nutrition:hover { border-color: var(--kat-line); background: var(--kat-subtle); }
+.card-finances:hover  { border-color: var(--nej-line); background: var(--nej-subtle); }
+.card-business:hover  { border-color: rgba(200,144,144,0.2); background: rgba(200,144,144,0.08); }
+.card-growth:hover    { border-color: rgba(184,168,216,0.2); background: rgba(184,168,216,0.08); }
+.card-chores:hover    { border-color: rgba(136,200,154,0.2); background: rgba(136,200,154,0.08); }
+
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.card-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.card-dropdown {
+  font-size: 16px;
+  color: var(--white-muted);
+  opacity: 0;
+  transition: opacity 0.15s, transform 0.15s;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.nav-card:hover .card-dropdown {
+  opacity: 1;
+  transform: rotate(180deg);
+}
+
+.card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--white);
+  letter-spacing: -0.3px;
+}
+
+.card-description {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.5px;
+  color: var(--white-muted);
+  line-height: 1.4;
+}
+
+.card-tag {
+  font-family: 'Space Mono', monospace;
+  font-size: 7px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 3px;
+  align-self: flex-start;
+  background: var(--accent-subtle);
+  color: var(--accent);
+  border: 1px solid var(--accent-line);
+}
+
+.card-nutrition .card-tag {
+  background: var(--kat-subtle);
+  color: var(--kat);
+  border-color: var(--kat-line);
+}
+
+.card-finances .card-tag {
+  background: var(--nej-subtle);
+  color: var(--nej);
+  border-color: var(--nej-line);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: rgba(19, 21, 26, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-top: 8px;
+  min-width: 200px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-8px);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.nav-card:hover .dropdown-menu {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.dropdown-item {
+  display: block;
+  padding: 10px 16px;
+  color: var(--white-muted);
+  text-decoration: none;
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: all 0.1s;
+  border-left: 2px solid transparent;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background: rgba(79,142,247,0.1);
+  color: var(--white);
+  border-left-color: var(--accent);
+}
+
+.dropdown-item.divider {
+  padding: 4px 0;
+  margin: 4px 0;
+  border-bottom: 1px solid var(--border);
+  cursor: default;
+}
+
+.dropdown-item.divider:hover {
+  background: transparent;
+}
+
+.card-arrow {
+  font-size: 12px;
+  color: var(--white-muted);
+  align-self: flex-end;
+  transition: all 0.15s;
+  margin-top: 4px;
+}
+
+.nav-card:hover .card-arrow {
+  color: var(--white-dim);
+  transform: translate(2px, -2px);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.nav-card {
+  animation: fadeIn 0.4s ease forwards;
+}
+
+.nav-card:nth-child(1) { animation-delay: 0s; }
+.nav-card:nth-child(2) { animation-delay: 0.05s; }
+.nav-card:nth-child(3) { animation-delay: 0.1s; }
+.nav-card:nth-child(4) { animation-delay: 0.15s; }
+.nav-card:nth-child(5) { animation-delay: 0.2s; }
+.nav-card:nth-child(6) { animation-delay: 0.25s; }
+</style>
+</head>
+<body>
+<div class="nav-grid">
+
+  <a class="nav-card card-home" href="#home">
+    <div class="card-header">
+      <div class="card-icon">⌂</div>
+      <div class="card-dropdown">⋮</div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">Home</div>
+      <div class="card-description">Daily overview<br>Today's pulse</div>
+    </div>
+    <div class="card-tag">Active</div>
+    <div class="card-arrow">↗</div>
+    <div class="dropdown-menu">
+      <a class="dropdown-item" href="#priorities">📋 Priorities</a>
+      <a class="dropdown-item" href="#chores">✦ Chores Today</a>
+      <a class="dropdown-item" href="#meals">🍽 Today's Menu</a>
+    </div>
+  </a>
+
+  <a class="nav-card card-nutrition" href="#nutrition">
+    <div class="card-header">
+      <div class="card-icon">🍽</div>
+      <div class="card-dropdown">⋮</div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">Nutrition</div>
+      <div class="card-description">Meal plan<br>Recipes · Grocery</div>
+    </div>
+    <div class="card-tag">Kat leads</div>
+    <div class="card-arrow">↗</div>
+    <div class="dropdown-menu">
+      <a class="dropdown-item" href="#this-week">📅 This Week Menu</a>
+      <a class="dropdown-item" href="#planning">🗓 Planning (2 weeks)</a>
+      <a class="dropdown-item" href="#ingredients">🥕 Ingredients</a>
+      <a class="dropdown-item" href="#recipes">📖 Recipe Book</a>
+      <a class="dropdown-item divider"></a>
+      <a class="dropdown-item" href="#influencers">🎥 Influencers</a>
+    </div>
+  </a>
+
+  <a class="nav-card card-finances" href="#finances">
+    <div class="card-header">
+      <div class="card-icon">◎</div>
+      <div class="card-dropdown">⋮</div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">Finances</div>
+      <div class="card-description">Bills · Savings<br>Big expenses</div>
+    </div>
+    <div class="card-tag">Nej leads</div>
+    <div class="card-arrow">↗</div>
+    <div class="dropdown-menu">
+      <a class="dropdown-item" href="#budget">💰 Budget Overview</a>
+      <a class="dropdown-item" href="#bills">📄 Bills & Expenses</a>
+      <a class="dropdown-item" href="#savings">🎯 Savings Tracker</a>
+      <a class="dropdown-item" href="#investments">📊 Investments</a>
+    </div>
+  </a>
+
+  <a class="nav-card card-business" href="#business">
+    <div class="card-header">
+      <div class="card-icon">▣</div>
+      <div class="card-dropdown">⋮</div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">Business</div>
+      <div class="card-description">Marketplace<br>Pickups · Listings</div>
+    </div>
+    <div class="card-tag">Shared</div>
+    <div class="card-arrow">↗</div>
+    <div class="dropdown-menu">
+      <a class="dropdown-item" href="#pickups">📦 Pickup Schedule</a>
+      <a class="dropdown-item" href="#listings">📸 Active Listings</a>
+      <a class="dropdown-item" href="#clients">👥 Clients</a>
+      <a class="dropdown-item" href="#analytics">📈 Analytics</a>
+    </div>
+  </a>
+
+  <a class="nav-card card-growth" href="#growth">
+    <div class="card-header">
+      <div class="card-icon">◇</div>
+      <div class="card-dropdown">⋮</div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">Growth</div>
+      <div class="card-description">Certs · Habits<br>Goals · Gym</div>
+    </div>
+    <div class="card-tag">Kat leads</div>
+    <div class="card-arrow">↗</div>
+    <div class="dropdown-menu">
+      <a class="dropdown-item" href="#certifications">🎓 Certifications</a>
+      <a class="dropdown-item" href="#gym">💪 Gym Progress</a>
+      <a class="dropdown-item" href="#habits">📊 Habits</a>
+      <a class="dropdown-item" href="#goals">🎯 Goals</a>
+    </div>
+  </a>
+
+  <a class="nav-card card-chores" href="#chores">
+    <div class="card-header">
+      <div class="card-icon">✦</div>
+      <div class="card-dropdown">⋮</div>
+    </div>
+    <div class="card-body">
+      <div class="card-title">Chores</div>
+      <div class="card-description">Arena · Score<br>Weekly log</div>
+    </div>
+    <div class="card-tag">Compete</div>
+    <div class="card-arrow">↗</div>
+    <div class="dropdown-menu">
+      <a class="dropdown-item" href="#today">📋 Today</a>
+      <a class="dropdown-item" href="#weekly">📅 Weekly</a>
+      <a class="dropdown-item" href="#leaderboard">🏆 Leaderboard</a>
+      <a class="dropdown-item" href="#history">📊 History</a>
+    </div>
+  </a>
+
+</div>
+</body>
+</html>
