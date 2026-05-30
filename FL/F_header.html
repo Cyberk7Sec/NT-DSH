@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jamuvia Header</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.7.0/dist/tabler-icons.min.css">
+<style>
+
+    /* ============================================================ */
+    /*  EDIT HERE                                                   */
+    /* ============================================================ */
+    :root {
+        --accent:      #5B9BD5;   /* active tile + dot (your signature blue) */
+        --text:        #ECEDF0;   /* main text / icons (soft white) */
+        --text-dim:    #8B909C;   /* labels, "home os" subtitle */
+        --tile-bg:     rgba(255,255,255,0.035);  /* frosted tile fill */
+        --tile-border: rgba(255,255,255,0.08);   /* tile hairline edge */
+        --radius:      14px;      /* tile roundness */
+    }
+    /* Background stays TRANSPARENT so Notion's page shows through.   */
+    /* To set the 6 tab links: edit the href="" on each tile below.   */
+    /* ============================================================ */
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    html, body {
+        background: transparent;
+        font-family: 'Inter', -apple-system, sans-serif;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    .wrap { padding: 4px 2px; }
+
+    .identity {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        margin-bottom: 16px;
+        padding-left: 2px;
+    }
+    .brand { color: var(--text); font-size: 23px; font-weight: 600; letter-spacing: -0.01em; }
+    .dot   { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+    .sub   { color: var(--text-dim); font-size: 13px; letter-spacing: 0.05em; }
+
+    .tiles {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 11px;
+    }
+
+    .tile {
+        background: var(--tile-bg);
+        border: 1px solid var(--tile-border);
+        border-radius: var(--radius);
+        padding: 13px 4px 9px;
+        text-align: center;
+        color: var(--text-dim);
+        text-decoration: none;
+        transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+    }
+    .tile i { font-size: 21px; color: #AEB3BF; display: block; }
+    .tile .lbl { font-size: 11px; margin-top: 6px; }
+
+    .tile:hover {
+        background: rgba(255,255,255,0.07);
+        border-color: rgba(255,255,255,0.16);
+        color: var(--text);
+    }
+    .tile:hover i { color: var(--text); }
+
+    .tile.active {
+        background: rgba(91,155,213,0.16);
+        border-color: rgba(91,155,213,0.42);
+        color: var(--accent);
+    }
+    .tile.active i { color: var(--accent); }
+
+    @media (max-width: 560px) {
+        .tiles { grid-template-columns: repeat(3, 1fr); }
+        .brand { font-size: 20px; }
+    }
+
+</style>
+</head>
+<body>
+    <div class="wrap">
+
+        <div class="identity">
+            <span class="brand">Jamuvia</span>
+            <span class="dot"></span>
+            <span class="sub">home os</span>
+        </div>
+
+        <div class="tiles">
+            <a class="tile active" href="#"><i class="ti ti-home"></i><div class="lbl">Home</div></a>
+            <a class="tile" href="#"><i class="ti ti-apple"></i><div class="lbl">Nutrition</div></a>
+            <a class="tile" href="#"><i class="ti ti-wallet"></i><div class="lbl">Finances</div></a>
+            <a class="tile" href="#"><i class="ti ti-briefcase"></i><div class="lbl">Business</div></a>
+            <a class="tile" href="#"><i class="ti ti-trending-up"></i><div class="lbl">Growth</div></a>
+            <a class="tile" href="#"><i class="ti ti-checklist"></i><div class="lbl">Chores</div></a>
+        </div>
+
+    </div>
+</body>
+</html>
