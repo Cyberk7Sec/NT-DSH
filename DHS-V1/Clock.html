@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>FlipClock</title>
+
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css" defer>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"
+            integrity="sha256-lSjKY0/srUM9BE3dPm+c4fBo1dky2v27Gdjm2uoZaL0=" crossorigin="anonymous">
+    </script>
+<style>
+
+    /* latin-ext */
+    @font-face {
+        font-family: 'Bebas Neue';
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: url(https://fonts.gstatic.com/s/bebasneue/v14/JTUSjIg69CK48gW7PXoo9WdhyyTh89ZNpQ.woff2) format('woff2');
+        unicode-range: U+0100-02AF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+    /* latin */
+    @font-face {
+        font-family: 'Bebas Neue';
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: url(https://fonts.gstatic.com/s/bebasneue/v14/JTUSjIg69CK48gW7PXoo9WlhyyTh89Y.woff2) format('woff2');
+        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+
+
+    /* ============================================================ */
+    /*  EDIT YOUR COLORS HERE — change the values below to restyle  */
+    /* ============================================================ */
+    :root {
+        --background: #0F0F0F;   /* page background — match your dashboard */
+        --text: #F0F0F0;         /* the digit color (soft white) */
+        --holder: #16161E;       /* the rounded clock panels (subtle glass tint) */
+
+        /* extras (rarely need changing) */
+        --line: #0F0F0F;
+        --theme_container_border: rgba(146, 146, 146, 0.481);
+        --theme-secondary: white;
+        --theme_shadow: black;
+        --partner-ad-background: #414141;
+    }
+    /* ============================================================ */
+
+    html,
+    body {
+        background-color: var(--background);
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        font-family: "Bebas Neue",sans-serif;
+        cursor: default;
+    }
+
+
+    .line {
+        width: 100%;
+        height: 8px;
+        background-color: var(--holder);
+        position: absolute;
+        top: 50%;
+        z-index: 2;
+    }
+
+    .container {
+        height: 100%;
+        display: flex;
+        flex-direction: row;
+        padding: 0 1% 0 1%;
+        transition: all .2s ease-out;
+    }
+
+    .holder {
+        position: relative;
+
+        width: 100%;
+
+        margin: auto 1%;
+
+        justify-content: center;
+        align-items: center;
+        background-color: var(--holder);
+
+        border-radius: 50px;
+    }
+
+    .holder h2 {
+        color: var(--text);
+
+        font-size: clamp(30vw, 40vw, 50vw);
+
+        margin: auto;
+        text-align: center;
+        font-weight: 100;
+        transition: all 0.5s;
+    }
+
+    .holder h3 {
+        position: absolute;
+        top: 75%;
+
+        color: var(--text);
+        font-size: clamp(3vw, 4vw, 5vw);
+        font-weight: bold;
+
+        margin-left: 7%;
+        text-align: left;
+    }
+
+    @media only screen and (max-width: 1200px) {
+        .line {
+            height: 5px;
+        }
+
+        .holder {
+            border-radius: 20px;
+            margin: auto 5px;
+        }
+
+
+        @media only screen and (orientation: portrait) {
+            .container {
+                flex-direction: column;
+                display: flex;
+                gap: 2rem;
+                width: 55%;
+                margin: 0 auto;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .holder {
+                margin: 0 !important;
+            }
+        }
+
+        @media only screen and (orientation: landscape) {
+            .container {
+                transform: scale(.9);
+                gap: 1rem;
+            }
+        }
+    }
+
+
+    @media only screen and (max-width: 900px) {
+        @media screen and (orientation: landscape) {
+            .container {
+                transform: scale(.7);
+            }
+        }
+    }
+
+
+    *::after, *::before, .flip_container * {
+        box-sizing: border-box;
+        font-size: clamp(30vw,40vw,50vw);
+        color: var(--text);
+        transition: all .5s;
+    }
+
+    .flip_container{
+        padding: 8.6% 0;
+    }
+
+
+</style>
+
+</head>
+
+<body>
+<div class="line"></div>
+
+<!-- CLOCK -->
+<div class="container">
+    <div class="holder">
+        <h2 id='hours'>--</h2>
+        <div class="flip_container"></div>
+    </div>
+
+    <div class="holder">
+        <h2 id='minutes'>--</h2>
+        <div class="flip_container"></div>
+    </div>
+</div>
+
+<script>
+	function updateClock() {
+		const now = new Date();
+		const hours = now.getHours();
+		const minutes = now.getMinutes();
+
+		const formattedHours = ('0' + hours).slice(-2);
+		const formattedMinutes = ('0' + minutes).slice(-2);
+
+		document.getElementById('hours').textContent = formattedHours;
+		document.getElementById('minutes').textContent = formattedMinutes;
+	}
+
+	setInterval(updateClock, 1000);
+	updateClock();
+</script>
+</body>
+</html>
